@@ -299,31 +299,31 @@
         let dropdownOptions = {}; // Store options for dropdowns
 
         const defaultTemplate = `{{CSS NPCS}}
-<h2 class="title"><textfield=name>type-here</textfield></h2>
-<div class="box-info right"><div class="box-pic glow-gray"><html><img src="/db/characters/nin_m.webp" alt="" /></html></div></div>
-<h2 class="title-responsive"><textfield=name>type-here</textfield></h2>
-<div class="prefix-tags"><span class="tag-npc">[[Characters|Character]]</span> <span class="tag-npc">[[:Category: <dropdown=NPC Importance>Major,Minor</dropdown>  NPCs|<dropdown=NPC Importance>Major,Minor</dropdown>]]</span> <span><dropdown=NPC Type>Lander,Starcalled,???</dropdown></span> <span><textfield=Tag 1>type-here</textfield></span> <span><textfield=Tag 2>type-here</textfield></span></div>
-__NOTOC__<textfield=Biography>line break should be counted here so paragraph is possible</textfield>
+<h2 class="title"><textfield=name></textfield></h2>
+<div class="box-info right"><div class="box-pic glow-<dropdown=Glow>Red,Gray,Blue,Yellow,Orange,Green,Purple,Teal,Aqua</dropdown>"><html><img src="/db/characters/<textfield=Name></textfield>_m.webp" alt="" /></html></div></div>
+<h2 class="title-responsive"><textfield=name></textfield></h2>
+<div class="prefix-tags"><span class="tag-npc">[[Characters|Character]]</span> <span class="tag-npc">[[:Category: <dropdown=NPC Importance>Major,Minor</dropdown>  NPCs|<dropdown=NPC Importance>Major,Minor</dropdown>]]</span> <span><dropdown=NPC Type>Lander,Starcalled,???</dropdown></span> <span><textfield=Tag 1></textfield></span> <span><textfield=Tag 2></textfield></span></div>
+__NOTOC__<textfield=Biography></textfield>
 
 ===Overview===
 <div class="char-grid">
 <div class="char-col bullet bu-4 b-gray">
 * '''Status:''' Alive · [https://terrarp.com/forums/trackers.6/ Tracker]
 * '''Type:''' [[<dropdown=NPC Type>Lander,Starcalled,???</dropdown>]]
-* '''Race:''' <textfield=Race>type-here</textfield>
+* '''Race:''' <textfield=Race></textfield>
 * '''Sex:''' <dropdown=Sex>Male,Female</dropdown>
-* '''Age:''' <textfield=Age>type-here</textfield>
-* '''Height:''' <textfield=Height>type-here</textfield>
-* '''Physique:''' <textfield=Physique>type-here</textfield>
+* '''Age:''' <textfield=Age></textfield>
+* '''Height:''' <textfield=Height></textfield>
+* '''Physique:''' <textfield=Physique></textfield>
 </div>
 <div class="char-col bullet bu-4 b-gray">
 * '''Sexuality:''' <dropdown=Sexuality>Heterosexual,Homosexual,Bisexual,Asexual,???</dropdown>
 * '''Relationship:''' <dropdown=Relationship>Single,Dating,Married,Divorced,Widowed,Situationship,???</dropdown>
-* '''Nationality:''' <textfield=Nationality>type-here</textfield>
-* '''Affiliation:''' <textfield=Affiliation>type-here</textfield>
-* '''Occupation:''' <textfield=Occupation>type-here</textfield>
-* '''Title:''' <textfield=Title>type-here</textfield>
-* '''Faceclaim:''' [https://terrarp.com/threads/faceclaim-listing-reservation.53/ <textfield=Faceclaim>type-here</textfield>]
+* '''Nationality:''' <textfield=Nationality></textfield>
+* '''Affiliation:''' <textfield=Affiliation></textfield>
+* '''Occupation:''' <textfield=Occupation></textfield>
+* '''Title:''' <textfield=Title></textfield>
+* '''Faceclaim:''' [https://terrarp.com/threads/faceclaim-listing-reservation.53/ <textfield=Faceclaim></textfield>]
 </div>
 </div>
 
@@ -331,6 +331,12 @@ __NOTOC__<textfield=Biography>line break should be counted here so paragraph is 
 {{Lore Extra Locked}}
 
 ===Story===
+{{entry
+| title = <textfield=Entry 1 Title></textfield>
+| text = {{icon branch}} [[Story]]<br>
+<textfield=Entry 1 Description></textfield>
+}}
+
 {{entry
 | title = Work in Progress
 | text = {{icon branch}} [[Story]]<br>
@@ -373,7 +379,7 @@ To be updated as soon as information becomes available.
                 if (match[1]) {
                     // This is a textfield
                     const fieldName = match[2];
-                    const defaultValue = match[3];
+                    const defaultValue = match[3] || '';
 
                     if (!processedFields.has(fieldName)) {
                         processedFields.add(fieldName);
@@ -408,14 +414,24 @@ To be updated as soon as information becomes available.
                 label.textContent = fieldName;
                 formGroup.appendChild(label);
 
+                // Add help text for Name field
+                if (fieldName === 'Name') {
+                    const helpText = document.createElement('div');
+                    helpText.className = 'help-text';
+                    helpText.textContent = 'Used for image filename (auto-converts to lowercase with underscores)';
+                    formGroup.appendChild(helpText);
+                }
+
                 if (fieldTypes[fieldName] === 'textfield') {
                     // Check if this should be a textarea (Biography field or similar)
                     if (fieldName.toLowerCase().includes('biography') ||
                         fieldName.toLowerCase().includes('description') ||
-                        fieldName.toLowerCase().includes('story')) {
+                        fieldName.toLowerCase().includes('story') ||
+                        fieldName.toLowerCase().includes('entry')) {
                         const textarea = document.createElement('textarea');
                         textarea.className = 'form-textarea';
                         textarea.value = fieldValues[fieldName];
+                        textarea.placeholder = 'Type Here';
                         textarea.addEventListener('input', (e) => updateField(fieldName, e.target.value));
                         formGroup.appendChild(textarea);
                     } else {
@@ -423,6 +439,7 @@ To be updated as soon as information becomes available.
                         input.type = 'text';
                         input.className = 'form-input';
                         input.value = fieldValues[fieldName];
+                        input.placeholder = 'Type Here';
                         input.addEventListener('input', (e) => updateField(fieldName, e.target.value));
                         formGroup.appendChild(input);
                     }
@@ -464,8 +481,14 @@ To be updated as soon as information becomes available.
             // Replace all instances of each field
             for (const [fieldName, value] of Object.entries(fieldValues)) {
                 if (fieldTypes[fieldName] === 'textfield') {
+                    // Special handling for Name field - convert to lowercase with underscores
+                    let replacementValue = value;
+                    if (fieldName === 'Name') {
+                        replacementValue = value.toLowerCase().replace(/\s+/g, '_');
+                    }
+
                     const regex = new RegExp(`<textfield=${escapeRegex(fieldName)}>[^<]*</textfield>`, 'g');
-                    output = output.replace(regex, value);
+                    output = output.replace(regex, replacementValue);
                 } else if (fieldTypes[fieldName] === 'dropdown') {
                     const regex = new RegExp(`<dropdown=${escapeRegex(fieldName)}>[^<]*</dropdown>`, 'g');
                     output = output.replace(regex, value);
