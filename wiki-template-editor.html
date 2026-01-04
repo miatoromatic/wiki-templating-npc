@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki Template Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #0f3460;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #00d9ff;
+            border-bottom: 2px solid #00d9ff;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #00d9ff;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a2e;
+            border: 2px solid #2d4059;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+
+        .form-select {
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: #2d4059;
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #3d5069;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #1a1a2e;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .output-box {
+            background: #1a1a2e;
+            border: 2px solid #2d4059;
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .import-box {
+            width: 100%;
+            min-height: 200px;
+            padding: 16px;
+            background: #1a1a2e;
+            border: 2px dashed #2d4059;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .import-box:focus {
+            outline: none;
+            border-color: #00d9ff;
+            border-style: solid;
+            box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+        }
+
+        .fields-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .fields-container::-webkit-scrollbar,
+        .output-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .fields-container::-webkit-scrollbar-track,
+        .output-box::-webkit-scrollbar-track {
+            background: #1a1a2e;
+            border-radius: 4px;
+        }
+
+        .fields-container::-webkit-scrollbar-thumb,
+        .output-box::-webkit-scrollbar-thumb {
+            background: #2d4059;
+            border-radius: 4px;
+        }
+
+        .fields-container::-webkit-scrollbar-thumb:hover,
+        .output-box::-webkit-scrollbar-thumb:hover {
+            background: #3d5069;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #1a1a2e;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .field-count {
+            display: inline-block;
+            background: #1a1a2e;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+            color: #00ff88;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .single-column {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel single-column">
+            <h1 class="panel-header">📝 Wiki Template Editor</h1>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="loadDefaultTemplate()">Load Default Template</button>
+                <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Import Template (Paste your raw wiki template here)</label>
+                <textarea class="import-box" id="templateImport" placeholder="Paste your template with <textfield=name> and <dropdown=name> tags..."></textarea>
+                <div class="help-text">Paste your template and click "Parse Template" to generate editable fields</div>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="parseTemplate()">Parse Template</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 class="panel-header">
+                ✏️ Edit Fields
+                <span class="field-count" id="fieldCount">0 fields</span>
+            </h2>
+            <div class="fields-container" id="fieldsContainer">
+                <div class="help-text">Import a template to see editable fields here</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 class="panel-header">📄 Output</h2>
+            <div class="button-group">
+                <button class="btn btn-success" onclick="copyToClipboard()">Copy to Clipboard</button>
+                <button class="btn btn-secondary" onclick="downloadOutput()">Download</button>
+            </div>
+            <div class="output-box" id="outputBox">Your processed template will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Store the template and field values
+        let templateString = '';
+        let fieldValues = {};
+        let fieldTypes = {}; // 'textfield' or 'dropdown'
+        let dropdownOptions = {}; // Store options for dropdowns
+
+        const defaultTemplate = `{{CSS NPCS}}
+<h2 class="title"><textfield=name>type-here</textfield></h2>
+<div class="box-info right"><div class="box-pic glow-gray"><html><img src="/db/characters/nin_m.webp" alt="" /></html></div></div>
+<h2 class="title-responsive"><textfield=name>type-here</textfield></h2>
+<div class="prefix-tags"><span class="tag-npc">[[Characters|Character]]</span> <span class="tag-npc">[[:Category: <dropdown=NPC Importance>Major,Minor</dropdown>  NPCs|<dropdown=NPC Importance>Major,Minor</dropdown>]]</span> <span><dropdown=NPC Type>Lander,Starcalled,???</dropdown></span> <span><textfield=Tag 1>type-here</textfield></span> <span><textfield=Tag 2>type-here</textfield></span></div>
+__NOTOC__<textfield=Biography>line break should be counted here so paragraph is possible</textfield>
+
+===Overview===
+<div class="char-grid">
+<div class="char-col bullet bu-4 b-gray">
+* '''Status:''' Alive · [https://terrarp.com/forums/trackers.6/ Tracker]
+* '''Type:''' [[<dropdown=NPC Type>Lander,Starcalled,???</dropdown>]]
+* '''Race:''' <textfield=Race>type-here</textfield>
+* '''Sex:''' <dropdown=Sex>Male,Female</dropdown>
+* '''Age:''' <textfield=Age>type-here</textfield>
+* '''Height:''' <textfield=Height>type-here</textfield>
+* '''Physique:''' <textfield=Physique>type-here</textfield>
+</div>
+<div class="char-col bullet bu-4 b-gray">
+* '''Sexuality:''' <dropdown=Sexuality>Heterosexual,Homosexual,Bisexual,Asexual,???</dropdown>
+* '''Relationship:''' <dropdown=Relationship>Single,Dating,Married,Divorced,Widowed,Situationship,???</dropdown>
+* '''Nationality:''' <textfield=Nationality>type-here</textfield>
+* '''Affiliation:''' <textfield=Affiliation>type-here</textfield>
+* '''Occupation:''' <textfield=Occupation>type-here</textfield>
+* '''Title:''' <textfield=Title>type-here</textfield>
+* '''Faceclaim:''' [https://terrarp.com/threads/faceclaim-listing-reservation.53/ <textfield=Faceclaim>type-here</textfield>]
+</div>
+</div>
+
+===Lore Extra===
+{{Lore Extra Locked}}
+
+===Story===
+{{entry
+| title = Work in Progress
+| text = {{icon branch}} [[Story]]<br>
+To be updated as soon as information becomes available.
+}}
+
+{{Navigation Characters}}
+[[Category:Characters]][[Category:<dropdown=NPC Importance>Major,Minor</dropdown> NPCs]][[Category:<dropdown=NPC Type>Lander,Starcalled,???</dropdown>]]`;
+
+        function loadDefaultTemplate() {
+            document.getElementById('templateImport').value = defaultTemplate;
+            parseTemplate();
+            showNotification('Default template loaded!');
+        }
+
+        function parseTemplate() {
+            const importBox = document.getElementById('templateImport');
+            templateString = importBox.value;
+
+            if (!templateString.trim()) {
+                alert('Please paste a template first!');
+                return;
+            }
+
+            fieldValues = {};
+            fieldTypes = {};
+            dropdownOptions = {};
+            const fieldsContainer = document.getElementById('fieldsContainer');
+            fieldsContainer.innerHTML = '';
+
+            // Find all unique field names
+            const textfieldRegex = /<textfield=([^>]+)>([^<]*)<\/textfield>/g;
+            const dropdownRegex = /<dropdown=([^>]+)>([^<]*)<\/dropdown>/g;
+
+            let match;
+            const processedFields = new Set();
+
+            // Process textfields
+            while ((match = textfieldRegex.exec(templateString)) !== null) {
+                const fieldName = match[1];
+                const defaultValue = match[2];
+
+                if (!processedFields.has(fieldName)) {
+                    processedFields.add(fieldName);
+                    fieldValues[fieldName] = defaultValue;
+                    fieldTypes[fieldName] = 'textfield';
+                }
+            }
+
+            // Process dropdowns
+            templateString.replace(dropdownRegex, (fullMatch, fieldName, options) => {
+                if (!processedFields.has(fieldName)) {
+                    processedFields.add(fieldName);
+                    const optionsArray = options.split(',').map(o => o.trim());
+                    dropdownOptions[fieldName] = optionsArray;
+                    fieldValues[fieldName] = optionsArray[0];
+                    fieldTypes[fieldName] = 'dropdown';
+                }
+                return fullMatch;
+            });
+
+            // Create form fields
+            const sortedFields = Array.from(processedFields).sort();
+            sortedFields.forEach(fieldName => {
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+
+                const label = document.createElement('label');
+                label.className = 'form-label';
+                label.textContent = fieldName;
+                formGroup.appendChild(label);
+
+                if (fieldTypes[fieldName] === 'textfield') {
+                    // Check if this should be a textarea (Biography field or similar)
+                    if (fieldName.toLowerCase().includes('biography') ||
+                        fieldName.toLowerCase().includes('description') ||
+                        fieldName.toLowerCase().includes('story')) {
+                        const textarea = document.createElement('textarea');
+                        textarea.className = 'form-textarea';
+                        textarea.value = fieldValues[fieldName];
+                        textarea.addEventListener('input', (e) => updateField(fieldName, e.target.value));
+                        formGroup.appendChild(textarea);
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'form-input';
+                        input.value = fieldValues[fieldName];
+                        input.addEventListener('input', (e) => updateField(fieldName, e.target.value));
+                        formGroup.appendChild(input);
+                    }
+                } else if (fieldTypes[fieldName] === 'dropdown') {
+                    const select = document.createElement('select');
+                    select.className = 'form-select';
+
+                    dropdownOptions[fieldName].forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option;
+                        optionElement.textContent = option;
+                        select.appendChild(optionElement);
+                    });
+
+                    select.value = fieldValues[fieldName];
+                    select.addEventListener('change', (e) => updateField(fieldName, e.target.value));
+                    formGroup.appendChild(select);
+                }
+
+                fieldsContainer.appendChild(formGroup);
+            });
+
+            // Update field count
+            document.getElementById('fieldCount').textContent = `${sortedFields.length} fields`;
+
+            // Initial output generation
+            updateOutput();
+            showNotification('Template parsed successfully!');
+        }
+
+        function updateField(fieldName, value) {
+            fieldValues[fieldName] = value;
+            updateOutput();
+        }
+
+        function updateOutput() {
+            let output = templateString;
+
+            // Replace all instances of each field
+            for (const [fieldName, value] of Object.entries(fieldValues)) {
+                if (fieldTypes[fieldName] === 'textfield') {
+                    const regex = new RegExp(`<textfield=${escapeRegex(fieldName)}>[^<]*</textfield>`, 'g');
+                    output = output.replace(regex, value);
+                } else if (fieldTypes[fieldName] === 'dropdown') {
+                    const regex = new RegExp(`<dropdown=${escapeRegex(fieldName)}>[^<]*</dropdown>`, 'g');
+                    output = output.replace(regex, value);
+                }
+            }
+
+            document.getElementById('outputBox').textContent = output;
+        }
+
+        function escapeRegex(str) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function copyToClipboard() {
+            const outputBox = document.getElementById('outputBox');
+            const text = outputBox.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('✓ Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        function downloadOutput() {
+            const outputBox = document.getElementById('outputBox');
+            const text = outputBox.textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'wiki-template-output.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification('✓ Template downloaded!');
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear everything?')) {
+                document.getElementById('templateImport').value = '';
+                document.getElementById('fieldsContainer').innerHTML = '<div class="help-text">Import a template to see editable fields here</div>';
+                document.getElementById('outputBox').textContent = 'Your processed template will appear here...';
+                document.getElementById('fieldCount').textContent = '0 fields';
+                templateString = '';
+                fieldValues = {};
+                fieldTypes = {};
+                dropdownOptions = {};
+                showNotification('All cleared!');
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 2000);
+        }
+
+        // Load default template on page load
+        window.addEventListener('load', () => {
+            loadDefaultTemplate();
+        });
+    </script>
+</body>
+</html>
