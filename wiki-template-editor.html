@@ -175,8 +175,6 @@
         }
 
         .fields-container {
-            max-height: 600px;
-            overflow-y: auto;
             padding-right: 10px;
         }
 
@@ -363,39 +361,44 @@ To be updated as soon as information becomes available.
             const fieldsContainer = document.getElementById('fieldsContainer');
             fieldsContainer.innerHTML = '';
 
-            // Find all unique field names
-            const textfieldRegex = /<textfield=([^>]+)>([^<]*)<\/textfield>/g;
-            const dropdownRegex = /<dropdown=([^>]+)>([^<]*)<\/dropdown>/g;
-
-            let match;
+            // Find all fields in order of appearance
+            const fieldMatches = [];
             const processedFields = new Set();
 
-            // Process textfields
-            while ((match = textfieldRegex.exec(templateString)) !== null) {
-                const fieldName = match[1];
-                const defaultValue = match[2];
+            // Combined regex to find both textfields and dropdowns
+            const combinedRegex = /(<textfield=([^>]+)>([^<]*)<\/textfield>)|(<dropdown=([^>]+)>([^<]*)<\/dropdown>)/g;
 
-                if (!processedFields.has(fieldName)) {
-                    processedFields.add(fieldName);
-                    fieldValues[fieldName] = defaultValue;
-                    fieldTypes[fieldName] = 'textfield';
+            let match;
+            while ((match = combinedRegex.exec(templateString)) !== null) {
+                if (match[1]) {
+                    // This is a textfield
+                    const fieldName = match[2];
+                    const defaultValue = match[3];
+
+                    if (!processedFields.has(fieldName)) {
+                        processedFields.add(fieldName);
+                        fieldMatches.push(fieldName);
+                        fieldValues[fieldName] = defaultValue;
+                        fieldTypes[fieldName] = 'textfield';
+                    }
+                } else if (match[4]) {
+                    // This is a dropdown
+                    const fieldName = match[5];
+                    const options = match[6];
+
+                    if (!processedFields.has(fieldName)) {
+                        processedFields.add(fieldName);
+                        fieldMatches.push(fieldName);
+                        const optionsArray = options.split(',').map(o => o.trim());
+                        dropdownOptions[fieldName] = optionsArray;
+                        fieldValues[fieldName] = optionsArray[0];
+                        fieldTypes[fieldName] = 'dropdown';
+                    }
                 }
             }
 
-            // Process dropdowns
-            templateString.replace(dropdownRegex, (fullMatch, fieldName, options) => {
-                if (!processedFields.has(fieldName)) {
-                    processedFields.add(fieldName);
-                    const optionsArray = options.split(',').map(o => o.trim());
-                    dropdownOptions[fieldName] = optionsArray;
-                    fieldValues[fieldName] = optionsArray[0];
-                    fieldTypes[fieldName] = 'dropdown';
-                }
-                return fullMatch;
-            });
-
-            // Create form fields
-            const sortedFields = Array.from(processedFields).sort();
+            // Create form fields in order of first appearance
+            const sortedFields = fieldMatches;
             sortedFields.forEach(fieldName => {
                 const formGroup = document.createElement('div');
                 formGroup.className = 'form-group';
